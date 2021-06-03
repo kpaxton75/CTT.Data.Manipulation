@@ -29,7 +29,7 @@
 ##                         -- 'CTT-8EEEF7F20F8E-raw-data.2020-08-26_111951.csv' is an example file name within the raw folder
 ##                         --  Everything prior to Project Name is the path on the computer where the files are found
 ##            - Verify that the date of the raw data file starts at the 44th character and ends at the 53rd character when counting from the Sensor Station name in the path
-##              ***** if this is not true for your data then you will need to change the numbers in Functions_CTT.Network.R line 26 to match your data **************
+##              ***** if this is not true for your data then you will need to change the numbers in Functions_CTT.Network.R line 27 to match your data **************
 ##     
 ##
 ##    Output
@@ -76,7 +76,7 @@ str(nodes) # check that data imported properly
         ## INFILE = Path where folders for multiple sensor stations are found 
         ## NODE.VERSION = Version of CTT node (needed for some CTT work flows)
         ## RADIOID = vector of RadioId to include - all values not included in the vector will be removed (e.g. radioid <- c(1,2,3) will include RadioId equal to 1,2, or 3)
-        ## TIMEZONE = Time zone where data was collected, use grep("Guam", OlsonNames(), value=TRUE) to find valid time zone name
+        ## TIMEZONE = Time zone where data was collected, use grep("", OlsonNames(), value=TRUE) to find valid time zone name
         ## START and END = Start and end dates of interest based on UTC time - Guam (+10 UTC)
 
     ## Output in R environment
