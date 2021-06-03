@@ -40,7 +40,7 @@ IMPORTANT Differences from CTT load_data() function
        
 6. Import_beep.data.Github script filters data to only include the RadioId(s) specified by the user
 
-7. Import_beep.data.Github script filters data with NAs produced in the 'NodeId' column when data is collected from a Sensor Station
+7. Import_beep.data.Github script filters rows with NAs produced in the 'NodeId' column when data is collected from a Sensor Station
      **** Users that are using beep data collected from the Sensor Station will need to comment out line 93 in Functions_CTT.Network.R ****
      
 8. Import_node.health.data.Github script also has separate code for creating diagnostic plots and information on node health
