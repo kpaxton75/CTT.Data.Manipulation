@@ -33,7 +33,7 @@ IMPORTANT Differences from CTT load_data() function
     
 4. R scripts add a column named 'Time.local' that indicates the timestamp for the local timezone specified by the user 
     **** For downstream data processing using CTT scripts having a second column with POSIXct format may cause problems and scripts will have to be slightly modified 
-       in order to keep this column ****
+         in order to keep this column ****
        
 5. R scripts save outputs of beep and node health data as RDS files (R data files) because this file type saves the format of each column when files are uploaded to R (unlike .csv files)
     **** Users will need to change line 111 (beep data) line 211 (node health data) in Functions_CTT.Network.R from 'saveRDS' to  'write.csv' and '.rds' to '.csv' if they prefer .csv files ****
