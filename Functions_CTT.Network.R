@@ -287,32 +287,17 @@ Node.Avg.Location <- function(x) {
     dplyr::summarise(lng = mean(Longitude),
                      lat = mean(Latitude))
 
-# copy of node locations to be used for spatial dataframe
-node.loc.summary.sp <- node.loc.summary
-
-# Calculate UTMs of Nodes and make node locations a spatial dataset
-sp::coordinates(node.loc.summary.sp) <- 2:3
-raster::crs(node.loc.summary.sp) <- sp::CRS("+proj=longlat +datum=WGS84")
-node.points <- spTransform(node.loc.summary.sp,sp::CRS("+proj=utm +zone=55 +ellps=WGS84 +datum=WGS84 +units=m +no_defs")) # UTMs
-
-# UTMs of nodes
-node.utm.dat <- data.frame(NodeId = node.points$NodeId, UTMx = node.points@coords[,1], UTMy = node.points@coords[,2])
-
-# Combine UTMs with lat long of nodes
-node.loc.summary.all <- node.loc.summary %>%
-  dplyr::left_join(node.utm.dat)
-
 # save data
-write.csv(node.loc.summary.all, paste0(outpath, "Nodes_Avg.Location_", START, "_", END, ".csv"), row.names = F)
+write.csv(node.loc.summary, paste0(outpath, "Nodes_Avg.Location_", START, "_", END, ".csv"), row.names = F)
 
 missing.nodes <- nodes %>%
-  dplyr::anti_join(node.loc.summary.all) %>%
-  dplyr::select(n_num, NodeId) %>%
+  dplyr::anti_join(node.loc.summary) %>%
+  dplyr::select(NodeId) %>%
   dplyr::mutate(Status = "missing_ML")
 
 write.csv(missing.nodes, paste0(outpath, "Missing.Nodes_",  START, "_", END, ".csv"), row.names = F)
 
-return(node.loc.summary.all)
+return(node.loc.summary)
 
 }
 
@@ -335,7 +320,7 @@ ggmap::register_google(key = Google.API)
   
 # base map from google maps
 ph_basemap <- ggmap::get_googlemap(center = c(lon = centerLng, lat = centerLat),
-                                                      zoom=15, # map zoom; an integer from 3 (continent) to 21 (building), default value 10 (city)
+                                                      zoom=ZOOM, # map zoom; an integer from 3 (continent) to 21 (building), default value 10 (city)
                                                       maptype = "satellite")
 
 map <- ggmap(ph_basemap) +
