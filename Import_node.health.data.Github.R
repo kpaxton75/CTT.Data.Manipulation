@@ -7,29 +7,32 @@
 ##    Code to import node health files from multiple Sensor Stations and Create Diagnostics for a specified time period
 ##
 ##    Files Needed
-##        1. .csv file with a list of all nodes in your network and their latitude and longitude
+##        1. Nodes.csv file with a list of all nodes in your network that is saved in the working directory defined below
 ##            - Column names needed: NodeId
-##            - Other columns can also be in the file for your reference
+##            - Other columns can also be in the file for your reference (e.g., longitude and latitude)
 ##            - Ensure all letters in NodeId are capitalized 
 ##            - If Node names are being converted to scientific notation in Excel open the file with a text editor (e.g. BBedit) to change names to the correct format and save the file
 ##
-##        2. .csv file with a list of base stations in your network and their latitude and longitude
-##            -- Column names needed: BaseId, lat, lng
+##        2. BaseStations.csv file with a list of base stations in your network and their latitude and longitude that is saved in the working directory defined below
+##            -- Column names needed: BaseId, lng, lat
 ##            -- other columns can also be in the file for your reference
 ##            -- Ensure all letters in BaseId are capitalized
 ##
-##        3. Node health data files
+##        3. Functions_CTT.Network.R file that contains function to run the script below - saved in the working directory defined below
+##
+##        4. Node health data files
 ##            - When you download data from CTT using API - all csv files of node health data will be in a folder for your project and within that folder there will be folders for each Base Station 
 ##             - and within each Base Station folder there will be a folder named 'node' that has node health data
 ##                   Ex. "/Users/kpaxton/DataFiles_CTT/Guam Sali/8EEEF7F20F8E/node_health/CTT-8EEEF7F20F8E-node-health.2020-09-17_032822.csv.gz"
 ##                         --  'Guam Sali' is the folder name of the Project
-##                         -- '8EEEF7F20F8E' is the folder name of the Sensor Station 
+##                         -- '8EEEF7F20F8E' is the folder name of the Sensor or Base Station 
 ##                         -- 'node_health' is the folder name with node health data 
 ##                         -- 'CTT-8EEEF7F20F8E-node-health.2020-09-17_032822.csv.gz' is an example file name within the node folder
 ##                         --  Everything prior to Project Name is the path on the computer where the files are found
 ##            - Verify that the date of the node health data file starts at the 55th character and ends at the 66th character when counting from the Sensor Station name in the path
-##              ***** if this is not true for your data then you will need to change the numbers in Functions_CTT.Network.R line 26 to match your data **************
+##              ***** if this is not true for your data then you will need to change the numbers in Functions_CTT.Network.R line 139 to match your data **************
 ##     
+##       
 ##    Node Health Diagnostics Created
 ##        1. All Node Health Data - all node health data imported for the period of time specified
 ##              - Exported as a .rds file to your outpath named - node_data_Start.Date_End.Date.rds
@@ -38,7 +41,7 @@
 ##        2. Node Health Data for Nodes with Latitude and Longitude coordinates outside of the coordinates designated
 ##              - In your working environment called - bad.locations.dat
 ##
-##        3. Node Locations - average lat and long (and UTMs) of Nodes detected by CTT for the period of time indicated
+##        3. Node Locations - average lat and long of Nodes detected by CTT for the period of time indicated
 ##              - Exported as csv file to your outpath named  - Node.Location.Averages_Start.Date_End.Date.csv
 ##
 ##        4. Nodes Missing - Nodes that are in your list of nodes, but are not being picked up by CTT Network (Status = Missing_ML)
@@ -82,9 +85,9 @@ setwd(working.directory)
 source("Functions_CTT.Network.R")
 
 # Bring in File with Node and Base Station Locations
-nodes <- read.csv("Node.csv", header = T)
+nodes <- read.csv("Nodes.csv", header = T)
 str(nodes) # check that data imported properly
-base <- read.csv("BaseStation_Locations.csv", header = T)
+base <- read.csv("BaseStations.csv", header = T)
 str(base)  # check that data imported properly
 
 
@@ -97,27 +100,33 @@ str(base)  # check that data imported properly
         ## NODE.VERSION = Version of CTT node (needed for some CTT work flows)
         ## TIMEZONE = Time zone where data was collected, use grep("<insert location name here>", OlsonNames(), value=TRUE) to find valid time zone name
         ## START & END = date range of data to process (format: "YYYY-MM-DD"), also removes any stray dates 
-        ## outpath = Path where output files should be sent 
         ## LAT.LOWER & LAT.UPPER = Lower and Upper latitude of your study area (all points that do not fall within these values will be exported to bad.locations.dat file)
         ## LONG.LOWER & LONG.UPPER = Lower and Upper longitude of your study area (all points that do not fall within these values will be exported to bad.locations.dat file)
+        ## ZOOM = zoom level of the map generated showing node locations for your study area, an integer from 3 (continent) to 21 (building) - may need to try a few values to determine correct number for your study area
+
   
   ## Output in R environment
-      # nodehealth.output - list containing node_data (all node data meeting specified time period and contained within the study area), 
-                          # Nodes_Bad.Locations (node data with Lat or Long outside of the study area), node.version (CTT version of nodes), count.import (number of rows imported),
-                          # count.NA (number of rows removed that had NA values - e.g. BaseStations have NA for NodeId), count.date (number of rows removed that did not fall within 
-                          # specified time period), count.nodes (number of rows removed where the NodeId did not match the NodeId in the provided lookup table)
+      # nodehealth.output - list containing:
+                          # node_data (all node data meeting specified time period and contained within the study area), 
+                          # Nodes_Bad.Locations (node data with Lat or Long outside of the study area)
+                          # node.version (CTT version of nodes)
+                          # count.import (number of rows imported)
+                          # count.NA (number of rows removed that had NA values - e.g. BaseStations have NA for NodeId)
+                          # count.date (number of rows removed that did not fall within specified time period)
+                          # count.nodes (number of rows removed where the NodeId did not match the NodeId in the provided lookup table)
   ## Output saved
      # .rds file of the node_data save in the specified outpath
 
 
 # Variables to define for function below - replace values below with user specified values -
-INFILE <- "/Users/kpaxton/Dropbox (Personal)/HIresearch/9_HCSU/Micronesian.Starling.Movement/Guam_ARTS/DataFiles_CTT/Guam Sali"
+INFILE <- "/Users/kpaxton/DataFiles_CTT/Guam Sali"
 NODE.VERSION <- 2
 TIMEZONE <- "Pacific/Guam"
 START <- "2021-05-01"
 END <- "2021-05-30"
+ZOOM <- 15
 
-# Function to import node health data -- need to define Lat and Long information below -- NO quotes
+# Function to import node health data -- need to define Lat and Long information below based on the boundaries of your study area-- NO quotes
 node.health.output <- import.node.health(INFILE, NODE.VERSION, RADIOID, TIMEZONE, START, END,
                                          LAT.LOWER = 13.550, LAT.UPPER = 13.600, LONG.LOWER = 144.900, LONG.UPPER = 144.950)
 
@@ -145,11 +154,10 @@ Node.Battery.Plot(health.dat)
 
 
 
-### Run Function to calculate average lat and long for each node, convert to UTMs, indicate any Nodes not being picked up by CTT Network
-  ## **** For general use remove n_num ******
+### Run Function to calculate average lat and long for each node and indicate any Nodes not being picked up by CTT Network
 
   ## Output in R Enviroment
-    ## node.loc.summary - dataframe with the average lat and long for each node based on node health data, UTMs also calculated
+    ## node.loc.summary - dataframe with the average lat and long for each node based on node health data
   ## Output saved
     ## .csv file of the node.loc.summary
     ## .csv file of Nodes in your list of nodes that were not detected by CTT Network during the specified time period
@@ -169,17 +177,6 @@ node.loc.summary <- Node.Avg.Location(health.dat)
     Google.API <- " **** Insert Google API key here**** "
 
 Map.of.Nodes(Google.API)
-
-
-
-
-
-
-
-
-
-
-
 
 
 
